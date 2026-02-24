@@ -43,6 +43,11 @@ pipeline {
                 }
             }
         }
+        stage('Debug Branch') {
+            steps {
+                sh 'echo GIT_BRANCH=$GIT_BRANCH'
+            }
+        }
 
         stage('Deploy to EC2') {
             when {
