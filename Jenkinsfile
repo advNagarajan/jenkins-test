@@ -52,7 +52,7 @@ pipeline {
         stage('Deploy to EC2') {
             when {
                 expression {
-                    return env.BRANCH_NAME?.contains("main")
+                    return env.GIT_BRANCH?.endsWith('/main')
                 }
             }
             steps {
