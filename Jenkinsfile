@@ -58,11 +58,12 @@ pipeline {
             steps {
                 sshagent(['ec2-key']) {
                     sh '''
-                    ssh -o StrictHostKeyChecking=no ec2-user@$EC2_HOST << EOF
-                    docker pull $IMAGE_NAME:latest
+                    ssh -o StrictHostKeyChecking=no ec2-user@$EC2_HOST <<EOF
+                    docker pull advnagarajan/sample-app:latest
                     docker stop sampleapp || true
                     docker rm sampleapp || true
-                    docker run -d -p 80:8000 --name sampleapp $IMAGE_NAME:latest
+                    docker run -d -p 80:8000 --name sampleapp advnagarajan/sample-app:latest
+                    exit
                     EOF
                     '''
                 }
