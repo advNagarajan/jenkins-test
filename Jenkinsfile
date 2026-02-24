@@ -46,7 +46,7 @@ pipeline {
 
         stage('Deploy to EC2') {
             when {
-                branch 'main'
+                expression { env.BRANCH_NAME == 'main' }
             }
             steps {
                 sshagent(['ec2-key']) {
