@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        IMAGE_NAME = "advnagarajan/jenkins-test-app"
+        IMAGE_NAME = "advnagarajan/sample-app"
         EC2_HOST = "13.232.211.135"
     }
 
