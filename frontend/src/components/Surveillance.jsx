@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API = "http://localhost:5000";
+const API = "http://13.232.211.135:8000";
 
 const inputStyle = {
     padding: "12px 15px",
