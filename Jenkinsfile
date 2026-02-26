@@ -2,7 +2,8 @@ pipeline {
     agent any
 
     environment {
-        IMAGE_NAME = "advnagarajan/sample-app"
+        FRONTEND_IMAGE = "advnagarajan/sample-frontend"
+        BACKEND_IMAGE  = "advnagarajan/sample-backend"
         EC2_HOST = "13.232.211.135"
     }
 
@@ -14,21 +15,21 @@ pipeline {
             }
         }
 
-        stage('Build Application') {
+        stage('Build Docker Images') {
             steps {
-                echo "Build step completed"
+                echo "Building frontend & backend images..."
+
+                sh '''
+                docker build -t $BACKEND_IMAGE:${BUILD_NUMBER} ./backend
+                docker tag $BACKEND_IMAGE:${BUILD_NUMBER} $BACKEND_IMAGE:latest
+
+                docker build -t $FRONTEND_IMAGE:${BUILD_NUMBER} ./frontend
+                docker tag $FRONTEND_IMAGE:${BUILD_NUMBER} $FRONTEND_IMAGE:latest
+                '''
             }
         }
 
-        stage('Docker Build') {
-            steps {
-                echo "Building Docker image..."
-                sh 'docker build -t $IMAGE_NAME:${BUILD_NUMBER} .'
-                sh 'docker tag $IMAGE_NAME:${BUILD_NUMBER} $IMAGE_NAME:latest'
-            }
-        }
-
-        stage('Push Image to DockerHub') {
+        stage('Push Images to DockerHub') {
             steps {
                 withCredentials([usernamePassword(
                     credentialsId: 'dockerhub-creds',
@@ -37,12 +38,17 @@ pipeline {
                 )]) {
                     sh '''
                     echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin
-                    docker push $IMAGE_NAME:${BUILD_NUMBER}
-                    docker push $IMAGE_NAME:latest
+
+                    docker push $BACKEND_IMAGE:${BUILD_NUMBER}
+                    docker push $BACKEND_IMAGE:latest
+
+                    docker push $FRONTEND_IMAGE:${BUILD_NUMBER}
+                    docker push $FRONTEND_IMAGE:latest
                     '''
                 }
             }
         }
+
         stage('Debug Branch') {
             steps {
                 sh 'echo GIT_BRANCH=$GIT_BRANCH'
@@ -59,10 +65,18 @@ pipeline {
                 sshagent(['ec2-key']) {
                     sh '''
                     ssh -o StrictHostKeyChecking=no ec2-user@$EC2_HOST <<EOF
-                    docker pull advnagarajan/sample-app:latest
-                    docker stop sampleapp || true
-                    docker rm sampleapp || true
-                    docker run -d -p 80:8000 --name sampleapp advnagarajan/sample-app:latest
+
+                    docker pull $BACKEND_IMAGE:latest
+                    docker pull $FRONTEND_IMAGE:latest
+
+                    docker stop backend || true
+                    docker rm backend || true
+                    docker stop frontend || true
+                    docker rm frontend || true
+
+                    docker run -d -p 5000:5000 --name backend $BACKEND_IMAGE:latest
+                    docker run -d -p 80:80 --name frontend $FRONTEND_IMAGE:latest
+
                     exit
                     EOF
                     '''
