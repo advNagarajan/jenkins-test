@@ -90,6 +90,22 @@ app.get("/logs", async (req, res) => {
   }
 });
 
+app.post("/logs", async (req, res) => {
+  try {
+    const { action, details } = req.body;
+
+    await addLog(
+      action || "CUSTOM",
+      details || "Manual log entry"
+    );
+
+    res.json({ message: "Log entry added" });
+
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 /* ================= ADD CRIMINAL ================= */
 
 app.post("/criminals", async (req, res) => {
