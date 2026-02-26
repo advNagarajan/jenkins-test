@@ -6,8 +6,11 @@ import Surveillance from "./components/Surveillance";
 import CrimeLog from "./components/CrimeLog";
 import System from "./components/System";
 
+
+
 function App() {
-    const API = "http://localhost:5000";
+    const API = "http://13.232.211.135:8000";
+    console.log("API : ", API);
     const [activePage, setActivePage] = useState("add");
 
     // Form states for Add Target

@@ -64,22 +64,34 @@ pipeline {
             steps {
                 sshagent(['ec2-key']) {
                     sh '''
-                    ssh -o StrictHostKeyChecking=no ec2-user@$EC2_HOST <<EOF
+        ssh -o StrictHostKeyChecking=no ec2-user@$EC2_HOST << 'EOF'
 
-                    docker pull $BACKEND_IMAGE:latest
-                    docker pull $FRONTEND_IMAGE:latest
+        echo "Pulling latest images..."
+        docker pull advnagarajan/sample-backend:latest
+        docker pull advnagarajan/sample-frontend:latest
 
-                    docker stop backend || true
-                    docker rm backend || true
-                    docker stop frontend || true
-                    docker rm frontend || true
+        echo "Stopping old containers..."
+        docker stop backend frontend sampleapp 2>/dev/null || true
 
-                    docker run -d -p 5000:5000 --name backend $BACKEND_IMAGE:latest
-                    docker run -d -p 80:80 --name frontend $FRONTEND_IMAGE:latest
+        echo "Removing old containers..."
+        docker rm backend frontend sampleapp 2>/dev/null || true
 
-                    exit
-                    EOF
-                    '''
+        echo "Starting backend on port 8000..."
+        docker run -d \
+        --name backend \
+        -p 8000:8000 \
+        advnagarajan/sample-backend:latest
+
+        echo "Starting frontend on port 80..."
+        docker run -d \
+        --name frontend \
+        -p 80:80 \
+        advnagarajan/sample-frontend:latest
+
+        echo "Deployment complete"
+
+        EOF
+        '''
                 }
             }
         }
