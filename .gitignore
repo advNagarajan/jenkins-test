@@ -1,1 +1,5 @@
 rex.txt
+package-lock.json
+package.json
+testconnection.js
+node_modules/*
